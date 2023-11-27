@@ -1,0 +1,274 @@
+---
+title: "Quizz - Practice Functions, Loops etc."
+author: "Billy"
+date: "2023-11-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practice
+
+## Functions
+
+```{r functions}
+# Practice function 1
+function_1 <- function () {
+  return(10 * 3)
+}
+
+# Practice function 2
+function_2 <- function (x, y) {
+  return(x * y)
+}
+
+# Practice function 3
+function_3 <- function (x = 10, y = 3) {
+  return(x * y)
+}
+
+# Practice function 4
+function_4 <- function (x, y = 10) {
+  inner_function <- function (z) {
+    return(x * y * z)
+  }
+  return(inner_function)
+}
+
+# Practice function 5
+function_5 <- function (x = 10, y = 3, ...) {
+  z <- x + y
+  if (length(list(...)) > 0) {
+    z <- z + sum(...)
+  }
+  return(z)
+}
+
+# Practice function 6
+function_6 <- function (x = 10) {
+  if (x == 0 | x == 1) {
+    return(1)
+  } else {
+    return(x * function_6(x - 1))
+  }
+}
+
+# Try out different function calls below...
+function_6(10)
+```
+
+## Loops
+
+```{r loops}
+# For loop 1
+for_1 <- function (x) {
+  y <- c()
+  for (i in 1:length(x)) {
+    y <- c(y, i)
+  }
+  return(y)
+}
+
+# For loop 2
+for_2 <- function (x) {
+  y <- c()
+  for (i in x) {
+    y <- c(y, i)
+  }
+  return(y)
+}
+
+# While loop 1
+while_1 <- function (x, i, z) {
+  y <- c()
+  while(i < z) {
+    y <- c(y, x[i])
+    i <- i + 1
+  }
+}
+
+# For loop 3
+for_3 <- function(x, z) {
+  y <- c()
+  for (i in x) {
+    if (i == z) {
+      break
+    }
+    y <- c(y, i)
+  }
+  return(y)
+}
+
+# For loop 4
+for_4 <- function(x, z) {
+  y <- c()
+  for (i in x) {
+    if (i == z) {
+      return(y)
+    }
+    y <- c(y, i)
+  }
+  return(-1)
+}
+
+# For loop 5
+for_5 <- function(x, z) {
+  y <- c()
+  for (i in x) {
+    if (i == z) {
+      next
+    }
+    y <- c(y, i)
+  }
+  return(y)
+}
+
+# Try out different function calls for the loops below...
+for_4('letters', 10)
+```
+
+## Conditionals
+
+```{r conditionals}
+# Conditional 1
+cond_1 <- function(x, y){
+  if (x < y) {
+    z <- "less than"
+  } else if (x > y) {
+    z <- "more than"
+  } else {
+    z <- "equal"
+  }
+  return(z)
+}
+
+# Conditional 2
+cond_2 <- function(x, y){
+  if (x == y) {
+    z <- "equal"
+  } else {
+    z <- "not equal"
+  }
+  return(z)
+}
+
+# Conditional 3
+cond_3 <- function(x, y, relation = "equal"){
+  if (relation == "equal") {
+    if (x == y) {
+     return(TRUE)
+    } else {
+      return(FALSE)
+    }
+  } else if (relation == "not") {
+    if (x != y) {
+     return(TRUE)
+    } else {
+      return(FALSE)
+    }
+  } 
+}
+
+# Try out the functions for conditionals below...
+cond_3("g", "z", "not")
+```
+
+## Classes
+
+```{r classes}
+# S3 class
+S3_function <- function (name, x, y) {
+  S3_obj <- c(x = x, y = y)
+  class(S3_obj) <- name
+  return(S3_obj)
+}
+
+# S4 class 1
+S4_function_1 <- function (name, x, y) {
+  setClass(name, slots = c(x = "numeric", y = "numeric"))
+  S4_obj <- new(name, x = x, y = y)
+  return(S4_obj)
+}
+
+# S4 class 2
+S4_function_2 <- function (name, x, x_type, y, y_type) {
+  setClass(name, slots = c(x = x_type, y = y_type))
+  S4_obj <- new(name, x = x, y = y)
+  return(S4_obj)
+}
+
+# Try out the functions for creating classes below...
+S4_obj_2 <- S4_function_2("point2D", 4, "numeric", 3, "numeric")
+```
+
+## Methods S3
+
+```{r S3 methods}
+# S3 Methods
+obj_1 <- c(x = 3, y = 10)
+class(obj_1) <- "Point2D"
+
+# Example of adding and referencing attributes in a class
+attr(obj_1, "levels") <- 1:10
+attributes(obj_1)
+levels(obj_1)
+
+obj_2 <- c(x = 5, y = 12)
+class(obj_2) <- "Point2D"
+
+# S3 method
+distance.Point2D <- function(p1, p2) {
+  sqrt((p1[1] - p2[1])^2 + (p1[2] - p2[2])^2)
+}
+
+distance.Point2D(obj_1, obj_2)
+```
+
+## Methods S4
+
+```{r S4 methods}
+# S4 Methods
+point1D <- setClass("Point1D", slots = list(x = "numeric"))
+point2D <- setClass("Point2D", slots = list(x = "numeric", y = "numeric"))
+point3D <- setClass("Point3D", slots = list(x = "numeric", y = "numeric", z = "numeric"))
+
+# Objects
+point1D_1 <- point1D(x = 10)
+point1D_2 <- point1D(x = 2)
+
+point2D_1 <- point2D(x = 10, y = 5)
+point2D_2 <- point2D(x = 2, y = 10)
+
+point3D_1 <- new("Point3D", x = 10, y = 5, z = 0) # Alternative way
+point3D_2 <- point3D(x = 2, y = 10, z = 3)
+
+setGeneric("point", function(point1, point2) {
+  standardGeneric("point")
+})
+
+setMethod("point", signature = c(point1 = "Point1D", point2 = "Point1D"),
+          function(point1, point2) {
+            result <- sqrt((point1@x - point2@x)^2)
+            return(result)
+          })
+
+setMethod("point", signature = c(point1 = "Point2D", point2 = "Point2D"),
+          function(point1, point2) {
+            result <- sqrt((point1@x - point2@x)^2 + (point1@y - point2@y)^2)
+            return(result)
+          })
+
+setMethod("point", signature = c(point1 = "Point3D", point2 = "Point3D"),
+          function(point1, point2) {
+            result <- sqrt((point1@x - point2@x)^2 + 
+                             (point1@y - point2@y)^2 + 
+                             (point1@z - point2@z)^2)
+            return(result)
+          })
+
+result_1D <- point(point1D_1, point1D_2)
+result_2D <- point(point2D_1, point2D_2)
+result_3D <- point(point3D_1, point3D_2)
+```

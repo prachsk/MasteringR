@@ -1,0 +1,122 @@
+---
+title: "Algorithms"
+author: "Billy"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practice Algorithms III
+
+#### quick sort
+
+```{r quick sort}
+quick_sort <- function(arr) {    
+  if (length(arr) <= 1) {
+    return(arr)
+  }
+  
+  # Choose a pivot element (middle of the array)   
+  pivot <- arr[length(arr) %/% 2]  
+  # Elements smaller than the pivot  
+  left <- arr[arr < pivot]         
+  # Elements equal to the pivot  
+  middle <- arr[arr == pivot]      
+  # Elements greater than the pivot 
+  right <- arr[arr > pivot]        
+
+  return(c(quick_sort(left), middle, quick_sort(right)))
+}
+
+sorted_vec <- quick_sort(sample(1:100))
+```
+
+#### 0/1 Knapsack problem
+
+```{r Knapsack problem}
+knapsack_01 <- function(values, weights, capacity) {
+  n <- length(values)
+  dp <- matrix(0, nrow = n + 1, ncol = capacity + 1)
+
+  for (i in 1:n) {
+    for (w in 1:capacity) {
+      if (weights[i] <= w) {
+        dp[i + 1, w] <- max(dp[i, w], dp[i, w - weights[i]] + values[i])
+      } else {
+        dp[i + 1, w] <- dp[i, w]
+      }
+    }
+  }
+  
+  print(dp) # Only used for display purposes
+
+  selected_items <- integer(0)
+  i <- n
+  w <- capacity
+
+  while (i > 0 && w > 0) {
+    if (dp[i + 1, w] != dp[i, w]) {
+      selected_items <- c(selected_items, i)
+      w <- w - weights[i]
+    }
+    i <- i - 1
+  }
+
+  return(list(max_value = dp[n + 1, capacity], selected_items = selected_items))
+}
+
+# Solve the 0/1 Knapsack Problem
+knapsack_01(c(40, 100, 120), c(10, 20, 30), 50)
+```
+
+#### Fractional knapsack problem
+
+```{r Fractional knapsack problem}
+fractional_knapsack <- function(values, weights, capacity) {
+  # Calculate the value-to-weight ratio for each item
+  value_per_weight <- values / weights
+
+  # Create an index vector to keep track of items
+  n <- length(weights)
+  item_indices <- 1:n
+  
+  # Sort items by the value-to-weight ratio in descending order
+  sorted_items <- item_indices[order(-value_per_weight)]
+  
+  # Initialize variables
+  total_value <- 0
+  knapsack <- rep(0, n)
+  current_weight <- 0
+  
+  # Fill the knapsack
+  for (i in sorted_items) {
+    if (current_weight + weights[i] <= capacity) {
+      # Add the whole item to the knapsack
+      knapsack[i] <- 1
+      total_value <- total_value + values[i]
+      current_weight <- current_weight + weights[i]
+    } else {
+      # Add a fraction of the item to fill the knapsack to its capacity
+      fraction <- (capacity - current_weight) / weights[i]
+      knapsack[i] <- fraction
+      total_value <- total_value + fraction * values[i]
+      break  # Knapsack is full
+    }
+  }
+  
+  # Return the selected items and total value
+  result <- list(
+    value_to_weight = value_per_weight, # For display purposes
+    selected_items = knapsack,
+    total_value = total_value
+  )
+
+  return(result)
+}
+
+# Solve the Fractional Knapsack Problem
+fractional_knapsack(c(40, 100, 120), c(10, 20, 30), 25)
+```

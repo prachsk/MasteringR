@@ -1,0 +1,264 @@
+---
+title: "Untitled"
+author: "Alen"
+date: "11/10/2023"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Question 1:
+
+```{r}
+# Use list.files to get a list of all CSV files in subfolders named "timeseries_data".
+
+# Your code here
+files_list <- list.files('./Timeseries_data', pattern = '.csv', full.names = TRUE, recursive = T)
+files_list
+
+```
+
+Question 2:
+
+```{r}
+# Use map to read each CSV file into a list of data frames.
+
+# Your code here
+data_list <- purrr::map(files_list, ~ read.csv(.))
+data_list
+
+```
+
+Question 3:
+
+```{r}
+# Use set_names, str_remove and basename functions to define names for each data frame in the list.  Use corresponding file names stored in the "files_list" object while omitting CSV extension.
+# Print head of data frames in a list.
+
+# Your code here
+data_list_named <-  data_list %>% set_names(stringr::str_remove(basename(files_list), "\\.csv"))
+purrr::map(data_list_named, ~head(.x, 5))
+
+```
+
+Question 4:
+
+```{r}
+# Use bind_rows to combine the list of data frames into a single data frame.
+
+# Your code here
+combined_df <- bind_rows(data_list_named)
+combined_df
+
+```
+
+Question 5:
+
+```{r}
+# Use mutate to convert 'Date' column to Date format.
+
+# Your code here
+combined_df <- combined_df %>%
+  mutate(Date = as.Date(Date))
+print(combined_df)
+
+```
+
+Question 6:
+
+```{r}
+# Use group_by and summarise functions to calculate the number of missing values for each Category.
+
+# Your code here
+combined_df %>%
+  group_by(Category) %>% 
+  summarise(n_missing = sum(is.na(Value)))
+
+```
+
+Question 7:
+
+```{r}
+# Use group_by and summarize to find the mean 'Value' for each 'Date'.
+
+# Your code here
+combined_df %>%
+  group_by(Date) %>%
+  summarise(Mean_Value = mean(Value))
+```
+
+Question 8:
+
+```{r}
+# Use mutate to change NAs with median 'Date' value. 
+# Create a new column 'Month' extracting the month from the 'Date'.
+
+# Your code here
+imputed_df <- combined_df %>%
+  group_by(Date) %>% 
+  mutate(Value = case_when(is.na(Value) ~ median(Value, na.rm = T),
+                           TRUE ~ Value)) %>% 
+  mutate(Month = months(Date))
+imputed_df
+
+```
+
+Question 9:
+
+```{r}
+# Use pivot_wider function to spread the data, having "Date" and "Month" as rows and "Category" as columns.
+
+# Your code here
+wide_df <- imputed_df %>%
+  group_by(Month) %>% 
+  pivot_wider(names_from = Category, values_from = Value)
+wide_df
+
+```
+
+Question 10:
+
+```{r}
+# Use c_across function and A:C columns to calculate the median for every row in 'wide_df'. Resulting data frame will be used for plotting later on.
+
+# Your code here
+mdn_df <- wide_df %>%
+  ungroup() %>% 
+  group_by(Date) %>% 
+  mutate(Mdn_value = median(c_across(A:C), na.rm = T))
+mdn_df
+
+```
+
+Question 11:
+
+```{r}
+# Use filter functions to select rows only fo the Month of 'June'. 
+# Remove min and max values of each Category. Try using slice function for this step. 
+# Think about how could you double check your code
+
+# Your code here
+filtered_june <- imputed_df %>%
+  filter(Month == 'June') %>% 
+  group_by(Category) %>% 
+  slice(-c(which.min(Value), which.max(Value)))
+filtered_june
+
+```
+
+Question 12:
+
+```{r}
+# Use variation of slice function, slice_head to get the top 10 rows of the "filtered_june" data frame and round the "Value" column with 2 decimal points.
+
+# Your code here
+top_10_rows <- filtered_june %>%
+  slice_head(n = 10) %>% 
+  mutate(Value = round(Value, 2))
+top_10_rows
+
+```
+
+Question 13:
+
+```{r}
+# Use case_when function and following cutoffs to adjust labels in column "Category".
+# A >= 51
+# 45.1 < B < 51
+# C <= 45.1 
+
+# Your code here
+recode_df <- top_10_rows %>%
+  mutate(Category = case_when(Value >= 51 ~ 'A',
+                              Value < 51 & Value > 45.1 ~ 'B',
+                              TRUE ~ 'C'))
+recode_df
+
+```
+
+Question 14:
+
+```{r}
+# Use proper slice function to see the last 3 rows of "recode_df".
+
+# Your code here
+last_3_rows <- recode_df %>%
+  tail(n = 3)
+last_3_rows
+
+```
+
+Question 15:
+
+```{r}
+# Assume you have a list of functions you want to apply to each "Category" in "top_10_rows" data frame.
+# Define 3 functions in the new object "functions_list". Let say you want to transform  each "Category" using three different techniques: log2, mean/sd, and median/range.
+# Reshape the data frame making each unique "Category" a separate column.
+# Use map2_dfc function apply each function from functions_list to the A:C columns.
+# Choose appropriate rename function to add '_raw' suffix to the original A:C columns.
+
+# Your code here
+functions_list <- list(log2, 
+                       function(x) (x - mean(x, na.rm = T))/sd(x, na.rm = T),
+                       function(x) (x - median(x, na.rm = T))/range(x, na.rm = T))
+
+processed_df <- top_10_rows %>% 
+  pivot_wider(names_from = 'Category', values_from = 'Value') 
+  
+
+processed_df <- processed_df %>% 
+  bind_cols(., map2_dfc(functions_list, c('log2', '(x-mean)/sd', '(x-median)/range'), function(func, abbr) {
+                map_dfc(processed_df %>% select(A:C), ~ func(.)) %>% 
+                  setNames(paste0(colnames(processed_df %>% select(A:C)), "_", abbr))
+}))
+
+processed_df <- processed_df %>%
+  rename_at(vars(A:C), ~paste0(., '_raw'))
+
+processed_df
+
+```
+
+Question 16:
+
+```{r}
+# Use mdn_df and ggplot2 functions to create a line plot of "Mdn_value" for each "Date" in "mdf_df" data frame. 
+# Take advantage of facet_wrap function to visualize subsets of "mdf_df" data frame based on the "Month". 
+
+# Your code here
+ggplot(mdn_df, aes(x = Date, y = Mdn_value, color = Month)) +
+  geom_line() +
+  facet_wrap(~Month, ncol = 1, scales = 'free_x') +
+  labs(title = "Average Value Over 6 Months",
+       x = "",
+       y = "Average") +
+  theme(legend.position = 'none')
+
+```
+
+Question 17:
+
+```{r dev = c("pdf"), dpi = 300}
+# Here, we will combine data wrangling together with ggplot function without storing transformed data into a new object.
+# Start by transforming processed_df data frame from wide to long format excluding 'Date' and 'Month' columns.
+# Split newly created 'Name' column into two separate columns, 'Category' and 'Type', using the underscore ('_') as the separator.
+# Use ggplot2 function and transformed "processed_df" data frame to create a box-plot of normalized 'Value-s' across different 'Categories', and grouped in different facets by 'Type'.
+
+# Your code here
+processed_df %>% 
+  pivot_longer(cols = -c(Date, Month), names_to = 'Name', values_to = 'Value') %>% 
+  separate(Name, into = c('Category', 'Type'), sep = '_', remove = F) %>% 
+  ggplot(., aes(x = Category, y = Value, fill = Category)) +
+  geom_boxplot() +
+  facet_wrap(~Type, scales = 'free_y') +
+  labs(x = "",
+       y = "Value") +
+  theme(legend.position = 'none')
+
+```

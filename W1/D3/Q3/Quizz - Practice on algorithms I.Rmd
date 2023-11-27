@@ -1,0 +1,122 @@
+---
+title: "Practice on Algorithms"
+author: "Billy"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practice
+
+## Algorithms
+
+#### Bubble sort
+
+```{r bubble sort}
+bubble_func <- function(arr) {
+  count <- 0
+  n <- length(arr)
+  for (i in 1:(n - 1)) {
+    for (j in 1:(n - i)) {
+      if (arr[j] > arr[j + 1]) {
+        temp <- arr[j]
+        arr[j] <- arr[j + 1]
+        arr[j + 1] <- temp
+      }
+      count <-count + 1
+      print(arr)
+    }
+  }
+  print(paste0("Number of swaps: ", count))
+  return(arr)
+}
+
+set.seed(100)
+test_vec <- sample(15)
+# test_vec <- c(test_vec, 5)
+sorted_arr <- bubble_func(test_vec)
+
+```
+
+#### Insertion sort
+
+```{r insertion sort}
+insertion_sort <- function(arr) {
+  count <- 0
+  n <- length(arr)
+  
+  for (i in 2:n) {
+    key <- arr[i]
+    j <- i - 1
+    
+    while (j >= 1 && arr[j] > key) {
+      arr[j + 1] <- arr[j]
+      j <- j - 1
+      count = count + 1
+    }
+    arr[j + 1] <- key
+    #print(arr)
+  }
+  print(paste0("Number of swaps: ", count))
+  return(arr)
+}
+
+set.seed(100)
+test_vec <- sample(15)
+# test_vec <- c(test_vec, 5)
+insertion_sort(test_vec)
+```
+
+#### Min, max mean test
+
+```{r min, max, mean}
+# Test for the bubble function
+bubble_test <- function(arr) {
+  n <- length(arr)
+  for (i in 1:(n - 1)) {
+    for (j in 1:(n - i)) {
+      if (arr[j] > arr[j + 1]) {
+        temp <- arr[j]
+        arr[j] <- arr[j + 1]
+        arr[j + 1] <- temp
+      }
+    }
+  }
+  return(arr)
+}
+
+# Test for the insertion function
+insertion_test <- function(arr) {
+  n <- length(arr)
+  for (i in 2:n) {
+    key <- arr[i]
+    j <- i - 1
+    while (j >= 1 && arr[j] > key) {
+      arr[j + 1] <- arr[j]
+      j <- j - 1
+    }
+    arr[j + 1] <- key
+  }
+  return(arr)
+}
+
+# Function to run algorithm multiple times and check the time it takes
+check_algorithm <- function(algorithm, arr, number) {
+  time <- c()
+  for (a in 1:number) {
+    tmp_time <- Sys.time()
+    algorithm(arr)
+    time <- c(time, Sys.time() - tmp_time)
+  }
+  return(time)
+}
+
+# Function call with arguments for the check algorithm function:
+# first argument = function, 
+# second argument = vector of values, 
+# third argument = number of times to run the test
+check_algorithm(insertion_test, sample(1:150), 10)
+```

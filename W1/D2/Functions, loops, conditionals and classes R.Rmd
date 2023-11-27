@@ -1,0 +1,376 @@
+---
+title: "Functions, loops, conditionals and classes"
+author: "Billy Langlet"
+date: "2023-10-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set()
+```
+
+## Functions
+
+The simplest R function does not provide default values for arguments, include a return statement or provide argument names in the function call.
+
+```{r simple function anatomy}
+my_func <- function(x, y) {
+  z <- x * y
+}
+
+obj <- my_func(10, 5)
+obj
+```
+
+There are several additional features for functions.
+
+#### Scope
+
+Usually object created in functions are destroyed when the function ends. However, if you use the "\<\<-" assignment operator the object will be declared "global", i.e., accessible outside of the function.
+
+```{r function scope}
+public_func <- function(x, y) {
+  z <<- x * y
+}
+
+obj <- public_func(3, 7)
+```
+
+#### Default arguments
+
+Many functions contain default values for arguments that are often a certain value.
+
+```{r default arguments in functions}
+default_func <- function(x = 1, y = 5) {
+  z <- x * y
+}
+
+obj <- default_func()
+obj
+obj <- default_func(10, 5)
+obj
+```
+
+#### Closures
+
+A closure is a function that retains access to variables from the enclosing (outside) function after execution of outside function.
+
+```{r closure functions}
+outer_function <- function(x) { 
+  inner_function <- function(y) { 
+    return(x + y)    
+  }
+  return(inner_function)
+}
+
+closure <- outer_function(10)
+closure
+result <- closure(5)
+result
+result2 <- closure(10)
+result2
+```
+
+#### Anonymous functions
+
+Anonymous functions are usually used when there is no need for reuse but other functions require a function as an argument.
+
+```{r anonymous functions}
+function(x) {x * 5}
+
+# Example
+sapply(mtcars, function(x) {x * 5})
+```
+
+#### Ellipses
+
+Ellipses (...) allow functions to take an unspecified number of arguments
+
+```{r ellipses in functions}
+ellipse_func <- function(x, y, ...) {
+  z <- x + y
+
+  if (length(list(...)) > 0) {
+    z <- z + sum(...)
+  }
+
+  return(z)
+}
+
+ellipse_func(1, 5)
+ellipse_func(1, 2, 3, 4, 5, 6, 7, 8)
+ellipse_func(... = c(5, 6, 7), y = 5, x = 2)
+```
+
+#### Recursion
+
+A function can call itself.
+
+```{r recursion in functions}
+factorial <- function(n){
+  if (n == 0 | n == 1) {
+    return(1)
+  } else {
+    return(n * factorial(n - 1))
+  }
+}
+
+factorial(10)
+```
+
+#### Optional documentation
+
+```{r optional documentation in functions}
+# This will not create the wanted behaviour, since we have not created a package yet
+
+#' Add together two numbers
+#'
+#' @param x A number or vector
+#' @param y A number or vector
+#'
+#' @return A number of vector
+#' @examples
+#' add(1, 1)
+add <- function(x, y) {
+  x + y
+}
+```
+
+#### Higher-order functions
+
+Higher order functions either take a function as an argument or returns a function.
+
+```{r higher-order functions}
+numbers <- list(1, 4, 9, 16)
+
+square_roots <- lapply(numbers, sqrt)
+```
+
+## Loops
+
+#### For loop
+
+The for loop is a control variable that tracks the current position in a sequence.
+
+```{r for loop anatomy}
+# Alternative 1
+for (i in 1:10) {
+  print(i)
+}
+
+my_vector <- c(1, 5, 2, 12)
+
+# Alternative 2
+for (i in my_vector) {
+  print(i)
+}
+```
+
+#### While loop
+
+The while loop is a control variable that evaluates to a logical value from the comparison between two values.
+
+```{r while loop anatomy}
+i = 1
+while(i < 10) {
+  print(i)
+  i <- i + 1
+}
+```
+
+#### Break
+
+Terminates a loop prematurely
+
+```{r break}
+df <- list(1, 2, 3)
+df2 <- list(mtcars)
+
+break_func <- function(data) {
+  for (i in data) {
+    if (is.null(dim(i))) {
+      print("Wrong number of dimensions")
+      break
+    }
+    print(data[[1]][1, 1])
+  }
+}
+
+break_func(df)
+break_func(df2)
+```
+
+#### Return
+
+You can use return to exit a function, and as an extension, any loop within the function.
+
+```{r return}
+return_func <- function(x, y) {
+  for (i in x) {
+    print(i)
+    if (i == y) {
+      return(paste0("The letter ", y, " is present in the vector"))
+    }
+  }
+  return(-1)
+}
+
+return_func(letters, "g")
+return_func(letters, "10")
+```
+
+#### Next
+
+Skips the current itteration.
+
+```{r next}
+skip_func <- function(x, y) {
+  tmp_data <- c()
+  for (i in x) {
+    if (class(i)  == "character") {
+      next
+    }
+    tmp_data <- c(tmp_data, i * y)
+  }
+  return(tmp_data)
+}
+
+skip_func(list(1, "a", 5, 10, "b"), 5)
+```
+
+## Conditionals
+
+```{r conditional anatomy}
+cond_func <- function(x){
+  if (x < 5) {
+    y <- "less than"
+  } else if (x > 5) {
+    y <- "more than"
+  } else {
+    y <- "equal"
+  }
+  return(y)
+}
+
+cond_func(1)
+cond_func(10)
+```
+
+#### Multiple conditions
+
+```{r multiple conditions}
+multi_func <- function(BMI) {
+  if (BMI < 30 && BMI > 18.5) {
+    x <- "no health check"
+  } else {
+    x <- "health check"
+  }
+  return(x)
+}
+
+multi_func(20)
+```
+
+#### Guard clause
+
+To prevent a function from running if something is "wrong".
+
+```{r guard clause}
+
+guard_func <- function (x) {
+  if (class(x) != "list") {
+    return("argument X is not a list")
+  }
+  # Some operation
+}
+
+guard_func(list(1, 2, 3))
+guard_func(mtcars)
+```
+
+#### Default values
+
+```{r default values}
+
+default_func <- function(x) {
+  if (class(x) == "list") {
+    y <- x[[1]]
+  } else {
+    y <- -1  
+  }
+  return(y)
+}
+
+default_func(list(1, 2, 3))
+default_func(mtcars)
+```
+
+#### Try catch
+
+There is also a function to create "Try catch" expressions.
+
+```{r try catch}
+evaluate_div <- function(x) {
+  tryCatch(
+    expr = {
+      message("Successfully executed the log(x) call.")
+      print(log(x))
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    },
+    warning = function(w){
+      message('Caught an warning!')
+      print(w)
+    },
+    finally = {
+      message('All done, quitting.')
+    })
+}
+
+evaluate_div(5)
+evaluate_div(-10)
+evaluate_div("Hello")
+```
+
+## Classes
+
+Basics of classes in R
+
+```{r classes}
+# S3 class (not declared value type of arguments)
+obj <- c(x = 3, y = 4)
+class(obj) <- "Point2D"
+
+# S4 class (declared value type of arguments)
+setClass("Point2D", slots = c(x = "numeric", y = "numeric"))
+
+point1 <- new("Point2D", x = 3, y = 4)
+point2 <- new("Point2D", x = 0, y = 10)
+
+# Other declaration of S4 class
+myClass <- setClass("Point3D", slots = c(x = "numeric", y = "numeric", z = "numeric"))
+
+point3 <- myClass(x = 1, y = 2, z = 3)
+point4 <- myClass(x = 1, y = 2, z = 5)
+```
+
+#### Extending class
+
+Adding a method (function) to a class can be done in R.
+
+```{r extending class}
+distance.Point2D <- function(p1, p2) {
+  sqrt((p1@x - p2@x)^2 + (p1@y - p2@y)^2)
+}
+
+print.Point2D <- function(p) {
+  cat("Point(", p@x, ",", p@y, ")\n")
+}
+
+distance.Point2D(point1, point2)
+print.Point2D(point1)
+
+# There are additional ways to handle more complex classes and methods using setMethod() etc
+```

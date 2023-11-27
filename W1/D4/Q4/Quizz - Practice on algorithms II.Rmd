@@ -1,0 +1,106 @@
+---
+title: "Algorithms"
+author: "Billy"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practice Algorithms II
+
+#### linear search
+
+```{r linear search}
+linear_search <- function(arr, target) {
+  iterations <- 0
+  for (i in 1:length(arr)) {
+    iterations <- iterations + 1
+    if (arr[i] == target) {
+      return(iterations)
+    }
+  }
+  return(-1)
+}
+
+vector_index <- linear_search(c(8,1,5,12,12,2), 12)
+```
+
+### binary search
+
+```{r binary search}
+binary_search <- function(arr, target) {
+  iterations <- 0
+  left <- 1
+  right <- length(arr)
+
+  while (left <= right) {
+    iterations <- iterations + 1
+    mid <- left + floor((right - left) / 2)  # Calculate the middle index
+    if (arr[mid] == target) {
+      return(iterations)  # Target found
+    } else if (arr[mid] < target) {
+      left <- mid + 1  # Search the right half
+    } else {
+      right <- mid - 1  # Search the left half
+    }
+  }
+  return(FALSE)  # Target not found
+}
+
+binary_index <- binary_search(c(8,6,12,1,5,12,3,2), 12)
+```
+
+#### Min, max mean test
+
+```{r min, max, mean}
+# Test for the linear search function 
+linear_search <- function(arr, target) {
+  iterations <- 0
+  for (i in 1:length(arr)) {
+    iterations <- iterations + 1
+    if (arr[i] == target) {
+      return(iterations)
+    }
+  }
+}
+
+# Test for the binary search function
+binary_search <- function(arr, target) {
+  iterations <- 0
+  left <- 1
+  right <- length(arr)
+  while (left <= right) {
+    iterations <- iterations + 1
+    mid <- left + floor((right - left) / 2)
+    if (arr[mid] == target) {
+      return(iterations)
+    } else if (arr[mid] < target) {
+      left <- mid + 1
+    } else {
+      right <- mid - 1
+    }
+  }
+}
+
+# Function to run algorithm multiple times and check the time it takes
+check_algorithm <- function(algorithm, arr, target, number) {
+  time <- c()
+  for (a in 1:number) {
+    tmp_time <- Sys.time()
+    algorithm(arr, target[a])
+    time <- c(time, Sys.time() - tmp_time)
+  }
+  return(time)
+}
+
+# Function call with arguments for the check algorithm function: 
+# first argument = function,  
+# second argument = vector of values,
+# third argument = value to search for
+# fourht argument = number of times to run the test 
+my_vec <- 1:1000
+check_algorithm(binary_search, my_vec, sample(my_vec, 10), 10)
+```

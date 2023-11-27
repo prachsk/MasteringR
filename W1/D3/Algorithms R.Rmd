@@ -1,0 +1,450 @@
+---
+title: "Algorithms"
+author: "Billy"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Algorithms
+
+## Big O notation
+
+Conducting a Big O notation analysis involves evaluating the time or space complexity of an algorithm to understand how it scales with input size.
+
+#### Example O(1)
+
+```{r O(1)}
+O1_func <- function(arr) {
+  return(arr[1])
+}
+
+O1_func(1:10000)
+```
+
+#### Example O(log n) - Binary search
+
+```{r O(log n)}
+Ologn_func <- function(arr, target) {
+  left <- 1
+  right <- length(arr)
+
+  while (left <= right) {
+    mid <- left + floor((right - left) / 2)  # Calculate the middle index
+
+    if (arr[mid] == target) {
+      return(mid)  # Target found
+    } else if (arr[mid] < target) {
+      left <- mid + 1  # Search the right half
+    } else {
+      right <- mid - 1  # Search the left half
+    }
+  }
+
+  return(-1)  # Target not found
+}
+
+Ologn_func(1:10000, 300)
+```
+
+#### Example O(n) - Linear search
+
+```{r O(n)}
+On_func <- function(arr, target) {
+  for (i in arr) {
+    if (arr[i] == target) {
+      return(target)
+    }
+  }
+  
+  return(-1)
+}
+
+On_func(1:10000, 10000)
+```
+
+#### Example O(n\^2) - Bubble sort
+
+```{r O(n^2)}
+On2_func <- function(arr) {
+  n <- length(arr)
+  for (i in 1:(n - 1)) {
+    for (j in 1:(n - i)) {
+      if (arr[j] > arr[j + 1]) {
+        # Swap elements arr[j] and arr[j + 1]
+        temp <- arr[j]
+        arr[j] <- arr[j + 1]
+        arr[j + 1] <- temp
+      }
+    }
+  }
+  return(arr)
+}
+
+sorted_arr <- On2_func(sample(1:10000))
+```
+
+## Basic algorithms
+
+Some of the more basic algorithms are **searching** and **sorting** algorithms.
+
+#### Example bubble sort
+
+```{r bubble sort}
+bubble_sort <- function(arr) {
+  if (!is.null(dim(arr))) {
+    stop('Not a vector')
+  }
+  
+  n <- length(arr)
+  for (i in 1:(n - 1)) {
+    for (j in 1:(n - i)) {
+      if (arr[j] > arr[j + 1]) {
+        # Swap elements arr[j] and arr[j + 1]
+        temp <- arr[j]
+        arr[j] <- arr[j + 1]
+        arr[j + 1] <- temp
+      }
+    }
+  }
+  return(arr)
+}
+
+sorted_arr <- bubble_sort(sample(1:10000))
+```
+
+#### Example insertion sort
+
+```{r insertion sort}
+insertion_sort <- function(arr) {
+  if (!is.null(dim(arr))) {
+    stop('Not a vector')
+  }
+
+  n <- length(arr)
+  
+  for (i in 2:n) {
+    key <- arr[i]
+    j <- i - 1
+    
+    # Move elements of arr[1..i-1] that are greater than key
+    # to one position ahead of their current position
+    while (j >= 1 && arr[j] > key) {
+      arr[j + 1] <- arr[j]
+      j <- j - 1
+    }
+    arr[j + 1] <- key
+  }
+  
+  return(arr)
+}
+
+insertion_sort(sample(1:10))
+insertion_sort(sample(1:10000))
+```
+
+#### Example linear search
+
+```{r linear search}
+linear_search <- function(arr, target) {
+  if (!is.null(dim(arr))) { # we can use the stop statement to exit the function
+    stop('Not a vector')
+  }
+  
+  for (i in arr) {
+    if (arr[i] == target) {
+      return(T)
+    }
+  }
+  return(F)
+}
+
+linear_search(1:10000, 7000)
+```
+
+### Example binary search
+
+```{r binary search}
+binary_search <- function(arr, target) {
+  if (!is.null(dim(arr))) { # we can use the stop statement to exit the function
+    stop('Not a vector')
+  }
+  
+  left <- 1
+  right <- length(arr)
+
+  while (left <= right) {
+    mid <- left + floor((right - left) / 2)  # Calculate the middle index
+
+    if (arr[mid] == target) {
+      return(mid)  # Target found
+    } else if (arr[mid] < target) {
+      left <- mid + 1  # Search the right half
+    } else {
+      right <- mid - 1  # Search the left half
+    }
+  }
+  return(-1)  # Target not found
+}
+
+Ologn_func(1:10000, 300)
+```
+
+## More complex algorithms
+
+Divide and conquer...
+
+#### Example quick sort
+
+```{r quick sort}
+quick_sort <- function(arr) {
+  if (length(arr) <= 1) {
+    return(arr)
+  }
+  
+  pivot <- arr[length(arr) %/% 2]  # Choose a pivot element (middle of the array)
+  left <- arr[arr < pivot]         # Elements smaller than the pivot
+  middle <- arr[arr == pivot]      # Elements equal to the pivot
+  right <- arr[arr > pivot]        # Elements greater than the pivot
+  
+  return(c(quick_sort(left), middle, quick_sort(right)))
+}
+
+quick_sort(sample(1:10000))
+```
+
+#### Example Karatsuba algoritm
+
+```{r Karatsuba algorithm}
+karatsuba <- function(x, y) {
+  if (x < 10 || y < 10) {
+    return(x * y)
+  }
+  
+  # Calculate the number of digits in both numbers
+  n <- max(nchar(x), nchar(y))
+  n2 <- n %/% 2
+
+  # Split the numbers into two halves
+  a <- x %/% 10^n2
+  b <- x %% 10^n2
+  c <- y %/% 10^n2
+  d <- y %% 10^n2
+
+  # Recursively calculate the three products required
+  ac <- karatsuba(a, c)
+  bd <- karatsuba(b, d)
+  ad_bc <- karatsuba((a + b), (c + d)) - ac - bd
+
+  # Combine the products to get the final result
+  result <- ac * 10^(2 * n2) + ad_bc * 10^n2 + bd
+
+  return(result)
+}
+
+karatsuba(124578, 326598)
+```
+
+## Advanced algorithms
+
+Dynamic programming...
+
+#### Example Fibonacci sequence without dynamic programming
+
+```{r Fibonacci sequence recursive calculation}
+fibonacci_recursive <- function(n) {
+  if (n <= 0) {
+    return(NULL)
+  } else if (n == 1) {
+    return(0)
+  } else if (n == 2) {
+    return(c(0, 1))
+  } else {
+    fib_sequence <- fibonacci_recursive(n - 1)
+    next_fib <- tail(fib_sequence, 1) + tail(head(fib_sequence, -1), 1)
+    return(c(fib_sequence, next_fib))
+  }
+}
+
+# Solve the fibonacci sequence
+fibonacci_recursive(10)
+```
+
+#### Example Fibonacci sequence with dynamic programming
+
+```{r Fibonacci sequence with dynamic programming}
+fibonacci_dynamic <- function(n) {
+  if (n <= 0) {
+    return(NULL)
+  } else if (n == 1) {
+    return(0)
+  } else if (n == 2) {
+    return(c(0, 1))
+  } else {
+    fib_sequence <- numeric(n)
+    fib_sequence[1] <- 0
+    fib_sequence[2] <- 1
+    for (i in 3:n) {
+      fib_sequence[i] <- fib_sequence[i - 1] + fib_sequence[i - 2]
+    }
+    return(fib_sequence)
+  }
+}
+
+# Solve the fibonacci sequence
+fibonacci_dynamic(10)
+```
+
+#### Example 0/1 Knapsack problem
+
+0/1 means you can either take or leave the item. The other version is the fractional knapsack problem, where you can take fractions of items.
+
+```{r Knapsack problem}
+knapsack_01 <- function(values, weights, capacity) {
+  n <- length(values)
+  dp <- matrix(0, nrow = n + 1, ncol = capacity + 1)
+
+  for (i in 1:n) {
+    for (w in 1:capacity) {
+      if (weights[i] <= w) {
+        dp[i + 1, w] <- max(dp[i, w], dp[i, w - weights[i]] + values[i])
+      } else {
+        dp[i + 1, w] <- dp[i, w]
+      }
+    }
+  }
+
+  selected_items <- integer(0)
+  i <- n
+  w <- capacity
+
+  while (i > 0 && w > 0) {
+    if (dp[i + 1, w] != dp[i, w]) {
+      selected_items <- c(selected_items, i)
+      w <- w - weights[i]
+    }
+    i <- i - 1
+  }
+
+  return(list(max_value = dp[n + 1, capacity], selected_items = selected_items))
+}
+
+# Solve the 0/1 Knapsack Problem
+knapsack_01(c(40, 100, 120), c(10, 20, 30), 50)
+```
+
+Greedy algorithms...
+
+#### Example Fractional knapsack problem
+
+```{r Fractional knapsack problem}
+fractional_knapsack <- function(values, weights, capacity) {
+  # Calculate the value-to-weight ratio for each item
+  value_per_weight <- values / weights
+  
+  # Create an index vector to keep track of items
+  n <- length(weights)
+  item_indices <- 1:n
+  
+  # Sort items by the value-to-weight ratio in descending order
+  sorted_items <- item_indices[order(-value_per_weight)]
+  
+  # Initialize variables
+  total_value <- 0
+  knapsack <- rep(0, n)
+  current_weight <- 0
+  
+  # Fill the knapsack greedily
+  for (i in sorted_items) {
+    if (current_weight + weights[i] <= capacity) {
+      # Add the whole item to the knapsack
+      knapsack[i] <- 1
+      total_value <- total_value + values[i]
+      current_weight <- current_weight + weights[i]
+    } else {
+      # Add a fraction of the item to fill the knapsack to its capacity
+      fraction <- (capacity - current_weight) / weights[i]
+      knapsack[i] <- fraction
+      total_value <- total_value + fraction * values[i]
+      break  # Knapsack is full
+    }
+  }
+  
+  # Return the selected items and total value
+  result <- list(
+    selected_items = knapsack,
+    total_value = total_value
+  )
+  return(result)
+}
+
+# Solve the Fractional Knapsack Problem
+fractional_knapsack(c(40, 100, 120), c(10, 20, 30), 25)
+```
+
+#### Example Dijkstra's shortest path
+
+```{r Dijikstras shortest path}
+# Function to find the vertex with the smallest tentative distance.
+find_min_distance_vertex <- function(distances, visited) {
+  min_distance <- Inf
+  min_vertex <- NULL
+  
+  for (vertex in names(distances)) {
+    if (!visited[vertex] && distances[vertex] < min_distance) {
+      min_distance <- distances[vertex]
+      min_vertex <- vertex
+    }
+  }
+  return(min_vertex)
+}
+
+# Dijkstra's algorithm
+dijkstra <- function(graph, start) {
+  # Initialize distances to all nodes as infinity and the start node as 0.
+  distances <- rep(Inf, length(graph))
+  names(distances) <- names(graph)
+  distances[start] <- 0
+  
+  # Create a boolean array to keep track of visited nodes.
+  visited <- rep(FALSE, length(graph))
+  names(visited) <- names(graph)
+  
+  for (i in 1:length(graph)) {
+    # Find the node with the smallest tentative distance.
+    current_vertex <- find_min_distance_vertex(distances, visited)
+    
+    # Mark the current node as visited.
+    visited[current_vertex] <- TRUE
+    
+    # Update distances to neighboring nodes.
+    for (neighbor in names(graph[[current_vertex]])) {
+      if (!visited[neighbor]) {
+        new_distance <- distances[current_vertex] +
+          graph[[current_vertex]][[neighbor]]
+        if (new_distance < distances[neighbor]) {
+          distances[neighbor] <- new_distance
+        }
+      }
+    }
+  }
+  return(distances)
+}
+
+# Example graph represented as an adjacency list.
+graph <- list(
+  'A' = list('B' = 2, 'C' = 6),
+  'B' = list('A' = 2, 'D' = 5),
+  'C' = list('A' = 6, 'D' = 8),
+  'D' = list('B' = 5, 'C' = 8, 'E' = 10, 'F' = 15),
+  'E' = list('D' = 10, 'F' = 6, 'G' = 2),
+  'F' = list('D' = 15, 'E' = 6, 'G' = 6),
+  'G' = list('E' = 2, 'F' = 6)
+)
+
+# Solve the shortest distance
+shortest_distances <- dijkstra(graph, 'A')
+```
